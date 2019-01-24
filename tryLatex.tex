@@ -1,4 +1,24 @@
-# Literate programming preprocessor
+\documentclass[11pt]{article}
+\title{Literate Programming Preprocessor}
+\author{Will Ware \texttt{<wware@alum.mit.edu>}}
+\date{}
+
+% PDFLaTeX Support
+\newif\ifpdf
+\ifx\pdfoutput\undefined
+   \pdffalse
+\else
+   \pdfoutput 1
+   \pdftrue
+\fi
+
+\begin{document}
+
+\thispagestyle{plain}
+\pagenumbering{roman}
+\maketitle
+
+\section{Literate programming preprocessor}
 
 Knuth's original vision for literate programming involved a single source file that
 could be processed in two different ways to produce compilable code on one pathway
@@ -24,29 +44,19 @@ To include a code snippet into a document, you use a sequence of regular express
 The last two in the sequence specify the starting and ending line of the snippet
 and the earlier regexes are steps to get you to the staring line. For instance you
 get to a particular method in a particular class in a particular file with something
-like this.
-
-To include a code snippet into a document, you use a sequence of regular expresssions.
-The last two in the sequence specify the starting and ending line of the snippet
-and the earlier regexes are steps to get you to the staring line. For instance you
-get to a particular method in a particular class in a particular file with something
 like this, where the "@" sign is the first character in the line, signaling the
 preprocessor that this line is to be preprocessed.
 
-```
+\begin{verbatim}
     @foobar.py:class Foobar/def foo\(self\)/x = 3/print x
-```
+\end{verbatim}
 
 produces
 
-```
+\begin{verbatim}
 @foobar.py:class Foobar/def foo\(self\)/x = 3/print x
-```
+\end{verbatim}
 
-To see this in action, install `grip` (a command line markdown renderer) and then type
+To generate a PDF from this LaTeX source, run "make".
 
-```
-./lpp < README.md | grip -
-```
-
-then go to http://localhost:6419 in a browser.
+\end{document}

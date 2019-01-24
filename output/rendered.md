@@ -40,7 +40,9 @@ preprocessor that this line is to be preprocessed.
 produces
 
 ```
-@foobar.py:class Foobar/def foo\(self\)/x = 3/print x
+        x = 3
+        print "yup"
+        print x
 ```
 
 To see this in action, install `grip` (a command line markdown renderer) and then type

@@ -8,29 +8,29 @@ sources, one of them an unmodified source code file.
 There are a few reasons for this divergence. First, the large volume of legacy code
 that hadn't yet been written in Knuth's day. Second, the large number of very useful
 tools that now exist and that assume their input is a normal source code file, not
-some squirrely predecessor to a source code file. Third, modern engineers don't want
+some strange predecessor to a source code file. Third, modern engineers don't want
 to learn some new scheme of deriving their source code from some other document
 format.
 
-So the first source for this scheme is a normal source code file, with no modifications
-whatsoever on behalf of this approach. There are no extra comments or tags or markup
-of any sort. Zero impact on source code is a hard requirement of this approach.
+The preprocessor should be as agnostic as possible about how documents are processed.
+LaTeX, Markdown, HTML, and any other format should work. Currently there are examples
+for LaTeX and Markdown.
 
-Also, the preprocessor should be as agnostic as possible about how documents are
-processed. LaTeX, Markdown, HTML, and any other format should work with minimal
-distraction. Currently there are examples for LaTeX and Markdown.
+## The first of two modes of operation
 
-To include a code snippet into a document, you use a sequence of regular expresssions.
+Both modes are ways to import chunks of code into a document. A chunk of code is
+a group of contiguous lines.
+
+The first mode is for source code that has no form of tags or markup or special comments.
+This is appropriate with legacy code, or where the code itself cannot be practically
+modified (for instance, documenting code to which you don't have commit privileges,
+such as the Linux kernel).
+
+The chunk of code in a document is specified by a sequence of regular expressions.
 The last two in the sequence specify the starting and ending line of the snippet
 and the earlier regexes are steps to get you to the staring line. For instance you
 get to a particular method in a particular class in a particular file with something
-like this.
-
-To include a code snippet into a document, you use a sequence of regular expresssions.
-The last two in the sequence specify the starting and ending line of the snippet
-and the earlier regexes are steps to get you to the staring line. For instance you
-get to a particular method in a particular class in a particular file with something
-like this, where the "@" sign is the first character in the line, signaling the
+like this, where the "@" sign is the left-most character in the line, signaling the
 preprocessor that this line is to be preprocessed.
 
 ```
@@ -42,6 +42,47 @@ produces
 ```
 @foobar.py:class Foobar/def foo\(self\)/x = 3/print x
 ```
+
+
+So the first source for this scheme is a normal source code file, with no modifications
+whatsoever on behalf of this approach. There are no extra comments or tags or markup
+of any sort. Zero impact on source code is a hard requirement of this approach.
+
+
+To include a code snippet into a document, you use a sequence of regular expresssions.
+The last two in the sequence specify the starting and ending line of the snippet
+and the earlier regexes are steps to get you to the staring line. For instance you
+get to a particular method in a particular class in a particular file with something
+like this.
+
+## The second mode
+
+In this case we use special markup to specify the first and last lines of a named chunk.
+By default the markup uses hashtag-style comments, like this.
+
+    before before before
+    code code code code     #+chunkname
+    code code code code
+    code code code code     #-chunkname
+    after after after
+
+With the prefix and suffix command line options, the "#" can be replaced with other
+character sequences. For instance with `--prefix '/**' --suffix '*/'` you could use
+code with markup like this.
+
+    before before before
+    code code code code     /**+chunkname*/
+    code code code code
+    code code code code     /**-chunkname*/
+    after after after
+
+An example from the `foobar.py` file looks like this.
+
+```
+@foobar.py:otherstuff
+```
+
+# Use grip to see it working
 
 To see this in action, install `grip` (a command line markdown renderer) and then type
 

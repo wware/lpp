@@ -1,5 +1,22 @@
 #!/usr/bin/env python
 
+"""
+This is a preprocessor for literate programming, where a source document can import
+code snippets from source code files. Source code files are used as-is, no special
+tags or markup or comments are required. To the extent possible, preprocessing is
+agnostic to how how the output will later be rendered.
+
+To include a code snippet into a document, you use a sequence of regular expresssions.
+The last two in the sequence specify the starting and ending line of the snippet
+and the earlier regexes are steps to get you to the staring line. For instance you
+get to a particular method in a particular class in a particular file with something
+like this, where the "@" sign is the left-most character in the line, signaling the
+preprocessor that this line is to be preprocessed. For example:
+
+@foobar.py:class Foobar/def foo\(self\)/x = 3/print x
+"""
+
+import argparse
 import os
 import sys
 import re
@@ -16,23 +33,86 @@ def advance_to_regex(lines, regex, n):
     return n
 
 
-for line in sys.stdin.readlines():
-    line = line.rstrip()
-    if len(line) < 1 or line[0] != '@':
-        # not a preprocessor line
-        print line
-        continue
-    line = line[1:]
-    n = line.index(":")
-    fn, line = line[:n], line[n+1:]
-    assert os.path.isfile(fn)
-    lines = [L.rstrip() for L in open(fn).readlines()]
-    sequence = line.split("/")   # escape slashes in regexes??
-    n = 0
-    for regex in sequence[:-2]:
-        n = advance_to_regex(lines, regex, n)
-    sregex, fregex = sequence[-2:]
-    m = advance_to_regex(lines, sregex, n)
-    n = advance_to_regex(lines, fregex, m)
-    for L in lines[m:n+1]:
-        print L
+def process(_input=None, _output=None, prefix=None, suffix=None):
+    if _input is None:
+        _input = sys.stdin
+    if _output is None:
+        _output = sys.stdout
+    if prefix is None:
+        prefix = '#'
+    if suffix is None:
+        suffix = ''
+    for line in _input.readlines():
+        if line[:1] != '@':
+            _output.write(line)
+            continue
+        line = line[1:].rstrip()
+        n = line.index(":")
+        fn, line = line[:n], line[n+1:]
+        assert os.path.isfile(fn)
+        lines = open(fn).readlines()
+        n = 0
+        if "/" in line:
+            # regex mode
+            sequence = line.split("/")   # escape slashes in regexes??
+            assert len(sequence) >= 2, 'not enough regular expressions: ' + line
+            for regex in sequence[:-2]:
+                n = advance_to_regex(lines, regex, n)
+            sregex, fregex = sequence[-2:]
+            cleanup = None
+        else:
+            # tag mode
+            prefix = prefix.replace("*", r"\*")
+            suffix = suffix.replace("*", r"\*")
+            sregex = prefix + r'\+' + line + suffix
+            fregex = prefix + '-' + line + suffix
+            cleanup = r'\s*' + prefix + '[+-]' + line + suffix
+        m = advance_to_regex(lines, sregex, n)
+        n = advance_to_regex(lines, fregex, m)
+        for L in lines[m:n+1]:
+            if cleanup:
+                L = re.sub(cleanup, '', L)
+            _output.write(L)
+
+
+def main():
+    parser = argparse.ArgumentParser(
+        prog=os.path.basename(__file__),
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        description=__doc__
+    )
+    parser.add_argument('-i', '--input',
+        help='select an input file, otherwise standard in',
+    )
+    parser.add_argument('-o', '--output',
+        help='select an output file, otherwise standard out',
+    )
+    parser.add_argument('--prefix',
+        help='blah blah blah',
+    )
+    parser.add_argument('--suffix',
+        help='blah blah blah',
+    )
+    parser.add_argument('--demo',
+        action='store_true',
+        help='do a demonstration using README.md',
+    )
+    opts = parser.parse_args()
+    _input = _output = None
+    if opts.demo and os.path.isfile("README.md"):
+        _input = open("README.md")
+        _output = os.popen("less -", "w")
+    else:
+        if opts.input is not None:
+            assert os.path.isfile(opts.input)
+            _input = open(opts.input)
+        if opts.output is not None:
+            _output = open(opts.output, 'w')
+    process(_input, _output, opts.prefix, opts.suffix)
+    if _input is not None:
+        _input.close()
+    if _output is not None:
+        _output.close()
+
+if __name__ == '__main__':
+    main()

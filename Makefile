@@ -2,11 +2,10 @@
 
 all: latex.pdf
 
-latex.tex: tryLatex.tex
-	./lpp < tryLatex.tex > latex.tex
-
-latex.pdf: latex.tex
+latex.pdf: tryLatex.tex
+	./lpp -i tryLatex.tex -o latex.tex
 	pdflatex latex.tex
+	rm -f latex.tex
 
 clean:
 	rm -f latex.*

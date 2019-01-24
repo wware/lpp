@@ -11,3 +11,8 @@ class Foobar(object):
         x = 3
         print "yup"
         print x
+
+def some_other_thing():    #+otherstuff
+    print "abc"
+    print "def"
+    print "ghi"      #-otherstuff

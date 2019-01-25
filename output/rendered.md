@@ -87,6 +87,11 @@ def some_other_thing():
     print "ghi"
 ```
 
+The reason for including this second mode is because if the regular expressions in the
+first mode aren't kept maintained as the code evolves, references can quickly start to
+fail, whereas markup placed in the source code itself will more easily and more likely
+be maintained across significant refactorings.
+
 # Use grip to see it working
 
 To see this in action, install `grip` (a command line markdown renderer) and then type

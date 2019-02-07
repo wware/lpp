@@ -96,3 +96,20 @@ To see this in action, install `grip` (a command line markdown renderer) and the
 ```
 
 then go to http://localhost:6419 in a browser.
+
+# Is there anything else I would want?
+
+I've got the two modes of including code, that's good.
+
+What else would be good? One thing would be a server that automatically does the weave
+when you request a markdown page. It would need to get a directory as an argument to the GET
+and the server would require access to that directory, so it would be smart to run the
+server in the repository where you're working. Maybe there is a dot-rc file in the directory,
+or if a dot-rc file is not found we just use the current directory.
+
+This server could really just be a script, something like this, with a little bit more
+complexity for the dot-rc file.
+
+```
+@serve.sh
+```

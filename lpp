@@ -47,6 +47,11 @@ def process(_input=None, _output=None, prefix=None, suffix=None):
             _output.write(line)
             continue
         line = line[1:].rstrip()
+        if ":" not in line:
+            # include the entire file
+            assert os.path.isfile(line)
+            print open(line).read().rstrip()
+            continue
         n = line.index(":")
         fn, line = line[:n], line[n+1:]
         assert os.path.isfile(fn)
